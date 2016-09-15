@@ -1,2 +1,2 @@
 # restaurant
-Laioffer Project Class (Chihuo). A restaurant recommendation app.
+DinnerSeeker, a restaurant recommendation application. By Hancle
