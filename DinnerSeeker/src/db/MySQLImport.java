@@ -65,7 +65,7 @@ public class MySQLImport {
 			stmt.executeUpdate(sql);
 
 			//Step 3. Insert a fake user
-			sql = "INSERT INTO users " + "VALUES (\"1111\", \"3229c1097c00d497a0fd282d586be050\", \"John\", \"Smith\")";
+			sql = "INSERT INTO users " + "VALUES (\"1111\", md5(CONCAT('1111', md5('911129'))), \"Hancle\", \"Yan\")";
 			stmt.executeUpdate(sql);
 
 			/*

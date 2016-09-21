@@ -14,6 +14,9 @@ var lat           = 37.38;
 function init() {
   // Register event listeners
   $('login-btn').addEventListener('click', login);
+  $('signup-btn').addEventListener('click', signup);
+  $('signup-btn2').addEventListener('click', signupPage);
+  $('login-btn2').addEventListener('click', onSessionInvalid);
   $('nearby-btn').addEventListener('click', loadNearbyRestaurants);
   $('fav-btn').addEventListener('click', loadFavoriteRestaurants);
   $('recommend-btn').addEventListener('click', loadRecommendedRestaurants);
@@ -50,6 +53,7 @@ function onSessionValid(result) {
   user_fullname = result.name;
 	  
   var loginForm = $('login-form');
+  var signupForm = $('signup-form');
   var restaurantNav = $('restaurant-nav');
   var restaurantList = $('restaurant-list');
   var avatar = $('avatar');
@@ -64,12 +68,14 @@ function onSessionValid(result) {
   showElement(welcomeMsg);
   showElement(logoutBtn, 'inline-block');
   hideElement(loginForm);
+  hideElement(signupForm);
 
   initGeoLocation();
 }
 
 function onSessionInvalid() {
   var loginForm = $('login-form');
+  var signupForm = $('signup-form');
   var restaurantNav = $('restaurant-nav');
   var restaurantList = $('restaurant-list');
   var avatar = $('avatar');
@@ -81,8 +87,28 @@ function onSessionInvalid() {
   hideElement(avatar);
   hideElement(logoutBtn);
   hideElement(welcomeMsg);
+  hideElement(signupForm);
   
   showElement(loginForm);
+}
+
+function signupPage() {
+  var loginForm = $('login-form');
+  var signupForm = $('signup-form');
+  var restaurantNav = $('restaurant-nav');
+  var restaurantList = $('restaurant-list');
+  var avatar = $('avatar');
+  var welcomeMsg = $('welcome-msg');
+  var logoutBtn = $('logout-link');
+
+  hideElement(restaurantNav);
+  hideElement(restaurantList);
+  hideElement(avatar);
+  hideElement(logoutBtn);
+  hideElement(welcomeMsg);
+  hideElement(loginForm);
+	  
+  showElement(signupForm);
 }
 
 function initGeoLocation() {
@@ -142,7 +168,58 @@ function showLoginError() {
 }
 
 function clearLoginError() {
-	$('login-error').innerHTML = '';
+  $('login-error').innerHTML = '';
+}
+
+//------------------------------------
+//	Sign-up
+//------------------------------------
+
+function signup() {
+
+  var username = $('newuser').value;
+  var password = $('newpassword').value;
+  var firstname = $('firstname').value;
+  var lastname = $('lastname').value;
+	
+  //error: invalid username or password
+  if (username.length < 3) {
+	$('signup-error').innerHTML = 'Username should contain at least 3 characters';
+	return;
+  }
+  if (password.length < 6) {
+	$('signup-error').innerHTML = 'Password should contain at least 6 characters';
+	return;
+  }
+  if (!firstname && !lastname) {
+	$('signup-error').innerHTML = 'First name and last name are required';
+	return;
+  }
+  password = md5(username + md5(password));
+	
+  //The request parameters
+  var url = './SignupServlet';
+  var params = 'user_id=' + username + '&password=' + password + '&firstname=' + firstname + '&lastname=' + lastname;
+  var req = JSON.stringify({});
+  ajax('POST', url + '?' + params, req,
+    // successful callback
+    function (res) {
+      var result = JSON.parse(res);
+		      
+      // successfully logged in
+	  if (result.status === 'OK') {
+		onSessionValid(result);
+	  }
+	},
+	//error
+	function () {
+	  showSignupError();
+	}
+  );
+}
+
+function showSignupError() {
+  $('signup-error').innerHTML = 'Invalid username or password';
 }
 
 // -----------------------------------
@@ -261,7 +338,7 @@ function ajax(method, url, data, callback, errorHandler) {
 /**
  * API #1
  * Load the nearby restaurants
- * API end point: [GET] /Dashi/restaurants?user_id=1111&lat=37.38&lon=-122.08
+ * API end point: [GET] /DinnerSeeker/restaurants?user_id=1111&lat=37.38&lon=-122.08
  */
 function loadNearbyRestaurants() {
   console.log('loadNearbyRestaurants');
@@ -296,7 +373,7 @@ function loadNearbyRestaurants() {
 /**
  * API #2
  * Load favorite (or visited) restaurants
- * API end point: [GET] /Dashi/history?user_id=1111
+ * API end point: [GET] /DinnerSeeker/history?user_id=1111
  */
 function loadFavoriteRestaurants() {
   activeBtn('fav-btn');
@@ -328,14 +405,14 @@ function loadFavoriteRestaurants() {
 /**
  * API #3
  * Load recommended restaurants
- * API end point: [GET] /Dashi/recommendation?user_id=1111
+ * API end point: [GET] /DinnerSeeker/recommendation?user_id=1111
  */
 function loadRecommendedRestaurants() {
   activeBtn('recommend-btn');
 
   // The request parameters
   var url = './recommendation';
-  var params = 'user_id=' + user_id;
+  var params = 'user_id=' + user_id + '&lat=' + lat + '&lon=' + lng;
   var req = JSON.stringify({});
   
   // display loading message
@@ -365,7 +442,7 @@ function loadRecommendedRestaurants() {
  * 
  * @param business_id - The restaurant business id
  * 
- * API end point: [POST]/[DELETE] /Dashi/history
+ * API end point: [POST]/[DELETE] /DinnerSeeker/history
  * request json data: { user_id: 1111, visited: [a_list_of_business_ids] }
  */
 function changeFavoriteRestaurant(business_id) {

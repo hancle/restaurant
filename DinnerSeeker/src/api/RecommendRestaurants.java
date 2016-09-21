@@ -42,9 +42,13 @@ public class RecommendRestaurants extends HttpServlet {
 		}
 		JSONArray array = null;
 		
-		if (request.getParameterMap().containsKey("user_id")) {
+		if (request.getParameterMap().containsKey("user_id")
+				&& request.getParameterMap().containsKey("lat")
+				&& request.getParameterMap().containsKey("lon")) {
 			String userId = request.getParameter("user_id");
-			array = connection.recommendRestaurants(userId);
+			double lat = Double.parseDouble(request.getParameter("lat"));
+			double lon = Double.parseDouble(request.getParameter("lon"));
+			array = connection.recommendRestaurants(userId, lat, lon);
 		}
 		RpcParser.writeOutput(response, array);
 	}

@@ -76,7 +76,9 @@ public class DBConnectionDBUnit extends DatabaseTestCase{
 		MySQLDBConnection dbconn = new MySQLDBConnection(
 				"jdbc:mysql://localhost:3306/unittest?user=root&password=root");
 		String userId = "1111";
-		JSONArray restaurants = dbconn.recommendRestaurants(userId);
+		double lon = -122.08;
+		double lat = 37.38;
+		JSONArray restaurants = dbconn.recommendRestaurants(userId, lat, lon);
 		Set<String> recommend = new HashSet<>();
         int length = restaurants.length();
         for(int i = 0; i < length; i++){

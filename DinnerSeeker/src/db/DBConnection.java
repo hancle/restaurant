@@ -47,7 +47,7 @@ public interface DBConnection {
 	 * @param userId
 	 * @return
 	 */
-	public JSONArray recommendRestaurants(String userId);
+	public JSONArray recommendRestaurants(String userId, double lat, double lon);
 	
 	/**
 	 * Gets categories based on business id
@@ -79,6 +79,14 @@ public interface DBConnection {
 	 * @return
 	 */
 	public Boolean verifyLogin(String userId, String password);
+	
+	/**
+	 * Verify if the userId is occupied. 
+	 * @param userId
+	 * @param password
+	 * @return
+	 */
+	public Boolean verifySignup(String userId, String password, String firstname, String lastname);
 
 	/**
 	 * Get user's name for the userId. 

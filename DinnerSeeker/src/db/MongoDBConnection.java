@@ -88,7 +88,7 @@ public class MongoDBConnection implements DBConnection {
 	}
 
 	@Override
-	public JSONArray recommendRestaurants(String userId) {
+	public JSONArray recommendRestaurants(String userId, double lat, double lon) {
 		try {
 
 			Set<String> visitedRestaurants = getVisitedRestaurants(userId);
@@ -209,6 +209,11 @@ public class MongoDBConnection implements DBConnection {
 				new Document("user_id", userId));
 		Document document = iterable.first();
 		return document.getString("password").equals(password);
+	}
+	
+	@Override
+	public Boolean verifySignup(String userId, String password, String firstname, String lastname) {
+		return true;
 	}
 
 	@Override

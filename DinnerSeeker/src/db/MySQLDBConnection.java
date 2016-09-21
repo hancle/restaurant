@@ -1,5 +1,6 @@
 package db;
 
+import java.security.*;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -166,7 +167,7 @@ public class MySQLDBConnection implements DBConnection {
 	}
 
 	@Override
-	public JSONArray recommendRestaurants(String userId) {
+	public JSONArray recommendRestaurants(String userId, double lat, double lon) {
 		try {
 			if (conn == null) {
 				return null;
@@ -182,19 +183,34 @@ public class MySQLDBConnection implements DBConnection {
 				Set<String> set = getBusinessId(category);
 				allRestaurants.addAll(set);
 			}
-			Set<JSONObject> diff = new HashSet<>();
+			Set<JSONObject> result = new HashSet<>();
 			int count = 0;
 			for (String businessId : allRestaurants) {
 				// Perform filtering
 				if (!visitedRestaurants.contains(businessId)) {
-					diff.add(getRestaurantsById(businessId, false));
+					JSONObject restaurant = getRestaurantsById(businessId, false);
+					double la = restaurant.getDouble("longitude");
+					double lo = restaurant.getDouble("latitude");
+					if (la <= lat + 0.2 && la >= lat - 0.2 && lo <= lon + 0.2 && lo >= lon - 0.2) {
+						result.add(restaurant);
+						count++;
+					}
+					if (count >= MAX_RECOMMENDED_RESTAURANTS) {
+						break;
+					}
+				}
+			}
+			if (count < MAX_RECOMMENDED_RESTAURANTS) {
+				JSONArray search = searchRestaurants(userId, lat, lon);
+				for (int i = 0; i < search.length(); i++) {
+					result.add(search.getJSONObject(i));
 					count++;
 					if (count >= MAX_RECOMMENDED_RESTAURANTS) {
 						break;
 					}
 				}
 			}
-			return new JSONArray(diff);
+			return new JSONArray(result);
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
@@ -265,7 +281,7 @@ public class MySQLDBConnection implements DBConnection {
 //					+ "' and password='" + password + "'";
 //			System.out.println(sql);
 //			ResultSet rs = executeFetchStatement(sql);
-
+//			String shaPassword = sha1(userId + sha1(password));
 			String sql = "SELECT user_id from users WHERE user_id = ? and password = ?";
 			PreparedStatement statement = conn.prepareStatement(sql);
 			statement.setString(1, userId);
@@ -274,6 +290,43 @@ public class MySQLDBConnection implements DBConnection {
 			if (rs.next()) {
 				return true;
 			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return false;
+	}
+	
+//	private String sha1(String input) throws NoSuchAlgorithmException {
+//        MessageDigest mDigest = MessageDigest.getInstance("SHA1");
+//        byte[] result = mDigest.digest(input.getBytes());
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i < result.length; i++) {
+//            sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+//        }
+//         
+//        return sb.toString();
+//    }
+	
+	@Override
+	public Boolean verifySignup(String userId, String password, String firstname, String lastname) {
+		try {
+			if (conn == null) {
+				return false;
+			}
+			String sql = "SELECT * FROM users WHERE user_id = " + userId;
+			PreparedStatement statement = conn.prepareStatement(sql);
+			ResultSet rs = statement.executeQuery();
+			if (rs.next()) {
+				return false;
+			}
+			sql = "INSERT INTO users VALUES(?, ?, ?, ?)";
+			statement = conn.prepareStatement(sql);
+			statement.setString(1, userId);
+			statement.setString(2, password);
+			statement.setString(3, firstname);
+			statement.setString(4, lastname);
+			statement.execute();
+			return true;
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}

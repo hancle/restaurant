@@ -68,6 +68,8 @@ public class LoginServlet extends HttpServlet {
 			// get request parameters for userID and password
 			String user = request.getParameter("user_id");
 			String pwd = request.getParameter("password");
+			System.out.println(user);
+			System.out.println(pwd);
 			if (connection.verifyLogin(user, pwd)) {
 				HttpSession session = request.getSession();
 				session.setAttribute("user", user);
