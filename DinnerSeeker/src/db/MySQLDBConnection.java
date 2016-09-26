@@ -203,8 +203,14 @@ public class MySQLDBConnection implements DBConnection {
 			if (count < MAX_RECOMMENDED_RESTAURANTS) {
 				JSONArray search = searchRestaurants(userId, lat, lon);
 				for (int i = 0; i < search.length(); i++) {
-					result.add(search.getJSONObject(i));
-					count++;
+					JSONArray cates = search.getJSONObject(i).getJSONArray("categories"); 
+					for (int j = 0; j < cates.length(); j++) {
+						if (allCategories.contains(cates.getString(j))) {
+							result.add(search.getJSONObject(i));
+							count++;
+							break;
+						}
+					}
 					if (count >= MAX_RECOMMENDED_RESTAURANTS) {
 						break;
 					}
