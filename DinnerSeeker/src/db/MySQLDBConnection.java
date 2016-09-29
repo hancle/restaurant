@@ -189,8 +189,8 @@ public class MySQLDBConnection implements DBConnection {
 				// Perform filtering
 				if (!visitedRestaurants.contains(businessId)) {
 					JSONObject restaurant = getRestaurantsById(businessId, false);
-					double la = restaurant.getDouble("longitude");
-					double lo = restaurant.getDouble("latitude");
+					double lo = restaurant.getDouble("longitude");
+					double la = restaurant.getDouble("latitude");
 					if (la <= lat + 0.2 && la >= lat - 0.2 && lo <= lon + 0.2 && lo >= lon - 0.2) {
 						result.add(restaurant);
 						count++;
@@ -203,10 +203,14 @@ public class MySQLDBConnection implements DBConnection {
 			if (count < MAX_RECOMMENDED_RESTAURANTS) {
 				JSONArray search = searchRestaurants(userId, lat, lon);
 				for (int i = 0; i < search.length(); i++) {
-					JSONArray cates = search.getJSONObject(i).getJSONArray("categories"); 
+					JSONObject restaurant = search.getJSONObject(i);
+					if (allRestaurants.contains(restaurant.getString("business_id"))) {
+						continue;
+					}
+					JSONArray cates = restaurant.getJSONArray("categories"); 
 					for (int j = 0; j < cates.length(); j++) {
 						if (allCategories.contains(cates.getString(j))) {
-							result.add(search.getJSONObject(i));
+							result.add(restaurant);
 							count++;
 							break;
 						}
