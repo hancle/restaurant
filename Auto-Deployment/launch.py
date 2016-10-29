@@ -2,8 +2,8 @@ import boto.ec2
 import time
 
 # Access Information
-aws_access_key_id = 'AKIAIJI77YH6JM3VCUEQ' 
-aws_secret_access_key = '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'
+aws_access_key_id = '***' 
+aws_secret_access_key = '**'
 region = 'us-west-2'
 
 # Instance Information
